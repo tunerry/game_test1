@@ -13,19 +13,36 @@ public class GameManager : MonoBehaviour {
     public bool gameover;
     public int score = 0;
     public Text score_txt;
+    public Text time_txt;
     public Text rank_txt;
     public bool isEnd;
+    public bool win;
+    private float nowtime;
     void Awake()
     {
         Instance = this;
         gameover = true;
         isEnd = false;
+        win = false;
+        nowtime = 120f;
         animator = GetComponent<Animator>();
     }
 
     private void Update()
     {
         score_txt.text = score.ToString();
+        if (!gameover)
+        {
+            nowtime -= Time.deltaTime;
+            if (nowtime <= 0)
+            {
+                isEnd = true;
+                gameover = true;
+                animator.SetTrigger("end");
+            }
+        }
+        
+        time_txt.text = ((int)nowtime).ToString();
         if (isEnd)
         {
             Rank();
@@ -57,13 +74,15 @@ public class GameManager : MonoBehaviour {
             File.Create(curPath);
         string[] strs = File.ReadAllLines(curPath);
         scoreList = new List<string>(strs);
-        scoreList.Add(score.ToString());
-        Debug.Log(score.ToString());
+        if (win)
+        {
+            scoreList.Add(time_txt.text);
+        }
+        
         List<int> intscore = new List<int>();
         foreach (string str in scoreList)
         {
             intscore.Add(int.Parse(str));
-            Debug.Log(str);
         }
             
         intscore.Sort();

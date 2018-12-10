@@ -9,6 +9,13 @@ public class MoveController : MonoBehaviour {
     CharacterController controller;//Charactor Controller组件
     public float moveSpeed = 5.0f;//移动的速度
 
+    private AudioSource audioSource;
+    private List<AudioClip> hits = new List<AudioClip>();
+
+    private string hit1Path = "Music/hit01";
+    private string hit2Path = "Music/hit02";
+    private Vector3 target;
+    private int hitFlag = 0;
     private Animator animator;
 
     void Start()
@@ -16,14 +23,24 @@ public class MoveController : MonoBehaviour {
         m_transform = gameObject.transform;
         m_camera = GameObject.FindGameObjectWithTag("MainCamera").transform;
         controller = GetComponent<CharacterController>();
-        animator = transform.GetComponent<Animator>();
+        animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+        hits.Add((AudioClip)Resources.Load(hit1Path, typeof(AudioClip)));
+        hits.Add((AudioClip)Resources.Load(hit2Path, typeof(AudioClip)));
+        target = new Vector3(10f, 0f, 40f);
     }
     // Update is called once per frame
     void Update()
     {
         if(GameManager.Instance.gameover)
             return;
-
+        if ((transform.position - target).sqrMagnitude < 1)
+        {
+            GameManager.Instance.isEnd = true;
+            GameManager.Instance.gameover = true;
+            GameManager.Instance.win = true;
+            GameManager.Instance.animator.SetTrigger("end");
+        }
         if ((Input.GetKey(KeyCode.W)) || (Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.A)) || (Input.GetKey(KeyCode.D)))
         {
             animator.SetBool("param_idletowalk", true);
@@ -60,6 +77,12 @@ public class MoveController : MonoBehaviour {
         if (Input.GetKey(KeyCode.Mouse0))
         {
             animator.SetTrigger("attack");
+            if (hitFlag == 0)
+                hitFlag += 1;
+            else
+                hitFlag -= 1;
+            audioSource.clip = hits[hitFlag];
+            audioSource.Play();
             Collider[] cols = Physics.OverlapSphere(transform.position, 1.5f);
 
             if (cols.Length > 0)

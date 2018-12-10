@@ -6,14 +6,19 @@ public class Enemy : MonoBehaviour {
 
     public GameObject target;
     public GameObject explosion;
+    public List<Vector3> targets = new List<Vector3>();
     private UnityEngine.AI.NavMeshAgent agent;
     private Animator animator;
+    private bool arrival = false;
+    private bool find = false;
+    private int arrFlag = 0;
 
     void Start()
     {
         target = GameObject.FindWithTag("player");
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         animator = GetComponent<Animator>();
+
     }
 
 
@@ -23,9 +28,29 @@ public class Enemy : MonoBehaviour {
         {
             return;
         }
-        if (gameObject && target)
+        if ((transform.position - targets[arrFlag]).sqrMagnitude < 1)
+        {
+            arrival = true;
+        }
+        if (gameObject && target && !find)
+        {
+            if (arrFlag == 0 && arrival)
+            {
+                arrFlag += 1;
+                arrival = false;
+            }
+            else if (arrFlag == 1 && arrival)
+            {
+                arrFlag -= 1;
+                arrival = false;
+            }
+            agent.SetDestination(targets[arrFlag]);
+        }
+        else if (find)
+        {
             agent.SetDestination(target.transform.position);
-
+        }
+            
         Collider[] cols = Physics.OverlapSphere(transform.position, 0.6f);
         for (int i = 0; i < cols.Length; i++)
         {
@@ -36,6 +61,14 @@ public class Enemy : MonoBehaviour {
                 GameManager.Instance.gameover = true;
                 GameManager.Instance.isEnd = true;
                 GameManager.Instance.animator.SetTrigger("end");
+            }
+        }
+        cols = Physics.OverlapSphere(transform.position, 3f);
+        for (int i = 0; i < cols.Length; i++)
+        {
+            if (cols[i].transform.tag == "player")
+            {
+                find = true;
             }
         }
     }
