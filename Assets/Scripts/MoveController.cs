@@ -36,9 +36,9 @@ public class MoveController : MonoBehaviour {
             return;
         if ((transform.position - target).sqrMagnitude < 1)
         {
-            GameManager.Instance.isEnd = true;
             GameManager.Instance.gameover = true;
             GameManager.Instance.win = true;
+            GameManager.Instance.isEnd = true;
             GameManager.Instance.animator.SetTrigger("end");
         }
         if ((Input.GetKey(KeyCode.W)) || (Input.GetKey(KeyCode.S)) || (Input.GetKey(KeyCode.A)) || (Input.GetKey(KeyCode.D)))
